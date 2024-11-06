@@ -1,1 +1,53 @@
+version: '3.8'
 
+services:
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  # phpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db  # link to MySQL service
+      PMA_PORT: 3309
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - '8080:80'
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  # Web Application Service (e.g., PHP)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Dockerfile for the web app
+    container_name: web_app
+    ports:
+      - '8000:82'  # Expose port 8000 for the web service
+    volumes:
+      - ./app:/var/www/html  # Mount application code
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+volumes:
+  db_data:
+
+networks:
+  app_network:
+    driver: bridge
