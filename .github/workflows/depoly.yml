@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
+      - name: Checkout the repository
         uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
@@ -20,7 +20,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
-        run: docker build -t yourusername/yourapp:${{ github.sha }} .
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }} .
 
       - name: Push Docker image to Docker Hub
-        run: docker push yourusername/yourapp:${{ github.sha }}
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }}
