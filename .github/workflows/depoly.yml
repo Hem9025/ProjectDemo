@@ -1,22 +1,17 @@
-name: Build, Test, and Deploy
+name: Build and Push Docker Image
 
 on:
   push:
     branches:
-      - main  # Triggers deployment on push to main branch
-  pull_request:
-    branches:
-      - main  # Triggers workflow on pull requests to main branch
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -29,21 +24,3 @@ jobs:
 
       - name: Push Docker image to Docker Hub
         run: docker push yourusername/yourapp:${{ github.sha }}
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Server
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          DOCKER_IMAGE: yourusername/yourapp:${{ github.sha }}
-        run: |
-          echo "$SSH_KEY" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no user@your-server.com << 'EOF'
-            docker pull $DOCKER_IMAGE
-            docker stop yourapp || true
-            docker rm yourapp || true
-            docker run -d --name yourapp -p 80:80 $DOCKER_IMAGE
-          EOF
